@@ -1,0 +1,177 @@
+---
+title: "Lab 1"
+author: "Tziporah Horowitz"
+output: pdf_document
+date: "Due: 11:59PM February 8, 2020"
+---
+
+
+
+You should have RStudio installed to edit this file. You will write code in places marked "TO-DO" to complete the problems. Some of this will be a pure programming assignment. The tools for the solutions to these problems can be found in the class practice lectures. I want you to use the methods I taught you, not for you to google and come up with whatever works. You won't learn that way.
+
+To "hand in" the homework, you should compile or publish this file into a PDF that includes output of your code. Once it's done, push by the deadline to your repository in a directory called "labs".
+
+* Print out the numerical constant pi with ten digits after the decimal point using the internal constant `pi`.
+
+```{r}
+options(digits = 10)
+pi
+```
+
+* Sum up the first 100 terms of the series 1 + 1/2 + 1/4 + 1/8 + ...
+
+```{r}
+options(scipen = 999)
+sum(1/(2^(0:99)))
+
+```
+
+* Find the product of the first 20 terms of `1/3 * 1/6 * 1/9 *` ...
+
+```{r}
+# faster
+prod(1/seq(3, 60, 3))
+# slower
+prod(1/(3*(1:20)))
+```
+
+
+* Find the product of the first 500 terms of `1 * 1/2 * 1/4 * 1/8 *` ...
+
+```{r}
+prod(1/(2^(0:499)))
+```
+
+Is this answer *exactly* correct? 
+
+No, because of overflow error.
+
+
+* Figure out a means to express the answer more exactly. Not compute exactly, but express more exactly.
+
+```{r}
+sum(-499:0*log(2))
+```
+
+* Create the sequence `x = [Inf, 20, 18, ..., -20]`.
+
+```{r}
+x <- c(Inf, seq(20, -20, -2))
+x
+```
+
+Create the sequence `x = [log_3(Inf), log_3(100), log_3(98), ... log_3(-20)]`.
+
+```{r}
+x <- c(logb(Inf, 3), logb(seq(100, -20, -2), 3))
+x
+```
+
+Comment on the appropriateness of the non-numeric values.
+You can't take log() of a negative number, log(Inf) = Inf, and log(0) = -Inf.
+
+
+* Create a vector of booleans where the entry is true if `x[i]` is positive and finite.
+
+```{r}
+pos_real <- (x > 0) & (x != Inf) & (!is.nan(x))
+```
+
+* Locate the indices of the non-numbers in this vector. Hint: use the `which` function.
+
+```{r}
+which(!pos_real)
+```
+
+* Locate the indices of the infinite quantities in this vector. Hint: use the `which` function.
+
+```{r}
+which(is.infinite(x))
+```
+
+* Locate the indices of the min and max in this vector. Hint: use the `which.min` and `which.max` functions.
+
+```{r}
+y <- x
+y[is.infinite(y)] <- NA
+c(which.min(y), which.max(y))
+
+```
+
+* Count the number of unique values in `x`.
+
+```{r}
+length(unique(x))
+
+```
+
+* Cast `x` to a factor. Do the number of levels make sense?
+
+```{r}
+factor(x)
+```
+
+* Cast `x` to integers. What do we learn about R's infinity representation in the integer data type?
+
+```{r}
+as.integer(x)
+```
+
+* Use `x` to create a new vector `y` containing only real numbers.
+
+```{r}
+y <- x[is.finite(x)]
+na.omit(y)
+```
+
+* Use the left rectangle method to numerically integrate x^2 from 0 to 1 with rectangle size 1e-6.
+
+```{r}
+sum(seq(0, 1 - 1e-6, 1e-6)^2) * 1e-6
+```
+
+
+* Calculate the average of 100 realizations of standard Bernoullis in one line using the `sample` function.
+
+```{r}
+zero_one <- c(0, 1)
+mean(sample(zero_one, 100, replace = TRUE))
+```
+
+
+* Calculate the average of 500 realizations of Bernoullis with p = 0.9 in one line using the `sample` function.
+
+```{r}
+ones9 <- rep(1, 9)
+mean(sample(c(0, ones9) , 500, replace = TRUE))
+# better way
+mean(sample(zero_one , 500, replace = TRUE, prob = c(.1, .9)))
+```
+
+
+* In class we considered a variable `x_3` which measured "criminality". We imagined L = 4 levels "none", "infraction", "misdimeanor" and "felony". Create a variable `x_3` here with 100 random elements (equally probable). Create it as a nominal (i.e. unordered) factor.
+
+```{r}
+lvls <- c("none", "infraction", "misdimeanor", "felony")
+x_3 <- factor(sample(lvls, 100, replace = TRUE), 
+             levels = c("none", "infraction", "misdimeanor", "felony"), 
+             ordered = FALSE)
+x_3
+```
+
+* Use `x_3` to create `x_3_bin`, a binary feature where 0 is no crime and 1 is any crime.
+
+```{r}
+x_3_bin <- ifelse(x_3 == "none", 0, 1)
+x_3_bin
+```
+
+* Use `x_3` to create `x_3_ord`, an ordered, nominal factor variable. Ensure the proper ordinal ordering.
+
+```{r}
+x_3_ord <- factor(x_3, ordered = TRUE)
+x_3_ord
+```
+
+
+
