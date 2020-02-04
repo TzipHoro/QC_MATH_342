@@ -46,7 +46,6 @@ Is this answer *exactly* correct?
 
 No, because of overflow error.
 
-
 * Figure out a means to express the answer more exactly. Not compute exactly, but express more exactly.
 
 ```{r}
