@@ -280,9 +280,9 @@ sentences <- paste(unlist(strsplit(lorem, "[.] ")), ".", sep = "")
 n <- length(sentences)
 vec <- sample(sentences, n)
 
-lorem <- vec[1]
+new <- vec[1]
 for (i in 2:n){
-  lorem <- paste(lorem, vec[i], sep = " ")
+  new <- paste(new, vec[i], sep = " ")
 }
 
 # pdf_output will not be able to wrap the text
