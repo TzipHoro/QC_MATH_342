@@ -228,6 +228,7 @@ sd(v)/sqrt(length(v))
 * Find the 5%ile of `v` and use the `qnorm` function to compute what it theoretically should be. Is the estimate about what is expected by theory?
 
 ```{r}
+quantile(v, 0.05)
 qnorm(0.05, -10, sqrt(100))
 ```
 
@@ -235,7 +236,9 @@ qnorm(0.05, -10, sqrt(100))
 * What is the percentile of `v` that corresponds to the value 0? What should it be theoretically? Is the estimate about what is expected by theory?
 
 ```{r}
-qnorm(0.85, -10, sqrt(100))
+invQ <- ecdf(v)
+invQ(0)
+qnorm(.85, -10, sqrt(100))
 ```
 
 
