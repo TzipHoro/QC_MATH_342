@@ -1,0 +1,390 @@
+---
+title: "Lab 5"
+author: "Tziporah Horowitz"
+output: pdf_document
+date: "11:59PM March 7, 2020"
+---
+
+Load the Boston housing data frame and create the vector $y$ (the median value) and matrix $X$ (all other features) from the data frame. Name the columns the same as Boston except for the first name it "(Intercept)".
+
+```{r}
+boston <- MASS::Boston
+head(boston)
+y <- boston$medv
+X <- boston[ , 1:13]
+```
+
+
+Run the OLS linear model to get $b$, the vector of coefficients. Do not use `lm`.
+
+```{r}
+X <- cbind(1, as.matrix(X))
+head(X)
+b <- solve(t(X) %*% X) %*% t(X) %*% y
+```
+
+
+Find the hat matrix for this regression `H`. Verify its dimension is correct and verify its rank is correct.
+
+```{r}
+H <- X %*% solve(t(X) %*% X) %*% t(X)
+dim(H)
+pacman::p_load(Matrix)
+rankMatrix(X)
+```
+
+
+Verify this is a projection matrix by verifying the two sufficient conditions. Use the `testthat` library's `expect_equal(matrix1, matrix2, tolerance = 1e-2)`.
+
+```{r warning=FALSE}
+pacman::p_load(testthat)
+expect_equal(H %*% H, H)
+expect(H, t(H))
+```
+
+
+Find the matrix that projects onto the space of residuals `Hcomp` and find its rank. Is this rank expected?
+
+```{r}
+Hcomp <- diag(nrow(H)) - H
+rankMatrix(H)
+rankMatrix(Hcomp, tol = 1e-2)
+```
+
+
+Verify this is a projection matrix by verifying the two sufficient conditions. Use the `testthat` library.
+
+```{r warning=FALSE}
+expect_equal(Hcomp %*% Hcomp, Hcomp)
+expect(Hcomp, t(Hcomp))
+```
+
+
+Use `diag` to find the trace of both `H` and `Hcomp`.
+
+```{r}
+sum(diag(H))
+sum(diag(Hcomp))
+```
+
+Do you have a conjecture about the trace of an orthogonal projection matrix?
+ 
+  The trace is equal to the rank.
+
+
+Find the eigendecomposition of both `H` and `Hcomp` as `eigenvals_H`, `eigenvecs_H`, `eigenvals_Hcomp`, `eigenvecs_Hcomp`. Verify these results are the correct dimensions.
+
+```{r}
+eigen_H <- eigen(H)
+eigen_Hcomp <- eigen(Hcomp)
+
+eigenvals_H <- eigen_H$values
+eigenvecs_H <- eigen_H$vectors
+eigenvals_Hcomp <- eigen_Hcomp$values
+eigenvecs_Hcomp <- eigen_Hcomp$vectors
+
+length(eigenvals_H)
+dim(eigenvecs_H)
+length(eigenvals_Hcomp)
+dim(eigenvecs_Hcomp)
+```
+
+
+The eigendecomposition suffers from numerical error which is making them become imaginary. We can coerce imaginary numbers back to real by using the `abs` function. There is also lots of numerical error. Use the `as.numeric` function to coerce to real and the `round` function to round all four objects to the nearest 10 digits.
+
+```{r warning=FALSE}
+eigenvals_H <- round(Re(eigenvals_H), 10)
+eigenvecs_H <- round(Re(eigenvecs_H), 10)
+eigenvals_Hcomp <- round(Re(eigenvals_Hcomp), 10)
+eigenvecs_Hcomp <- round(Re(eigenvecs_Hcomp), 10)
+```
+
+
+Print out the eigenvalues of both `H` and `Hcomp`. Is this expected?
+
+```{r}
+eigenvals_H
+eigenvals_Hcomp
+```
+
+
+Find the length of all eigenvectors of `H` in one line. Is this expected? What is the convention for eigenvectors in R's `eigen` function?
+
+```{r}
+apply(eigenvecs_H, MARGIN = 2, FUN = function(v){
+  sqrt(sum(v^2))
+})
+```
+
+  The convention is length 1.
+
+
+The first p+1 eigenvectors are the columns of $X$ but they are in arbitrary order. Find the column that represents the one-vector. 
+
+```{r}
+head(eigenvecs_H[ , 3])
+```
+
+Why is it not exactly 506 1's?
+
+  Numeric error.
+
+
+Use the first p+1 eigenvectors as a model matrix and run the OLS model of medv on that model matrix. 
+
+```{r}
+mod1 <- lm(y ~ 0 + X)
+mod2 <- lm(y ~ eigenvecs_H[, 1:14])
+coef(mod1)
+coef(mod2)
+```
+
+Is b about the same above (in arbitrary order)?
+
+  No, b is now scaled by the eigendecomposition.
+
+
+Calculate $\hat{y}$ using the hat matrix.
+
+```{r}
+yhat <- H %*% y 
+yhat
+```
+
+
+Calculate $e$ two ways: (1) the difference of $y$ and $\hat{y}$ and (2) the projection onto the space of the residuals. Verify the two means of calculating the residuals provide the same results via `expect_equal`.
+
+```{r}
+e2 <- Hcomp %*% y
+e1 <- y - yhat 
+expect_equal(e1, e2)
+```
+
+
+Calculate $R^2$ using the angle relationship between the responses and their predictions.
+
+```{r}
+len_vec <- function(v){sqrt(sum(v^2))}
+
+y_avg_adj <- y - mean(y)
+h_yhat_adj <- yhat - mean(y)
+
+
+cos(sum(y * yhat)/(len_vec(y) * len_vec(yhat)))
+```
+
+
+Find the cosine-squared of $y - \bar{y}$ and $\hat{y} - \bar{y}$ and verify it is the same as $R^2$. This empirically demonstrates what I missed in class: that the angle between $y$ and $\hat{y}$ is equal to the angle between $y - \bar{y}$ and $\hat{y} - \bar{y}$.
+
+```{r}
+summary(mod1)$r.squared
+```
+
+
+Verify $\hat{y}$ and $e$ are orthogonal.
+
+```{r}
+sum(yhat * e1)
+```
+
+
+Verify $\hat{y} - \bar{y}$ and $e$ are orthogonal.
+
+```{r}
+sum((yhat - mean(y)) * e1)
+```
+
+
+Verify the sum of squares identity which we learned was due to the Pythagorean Theorem (applies since the projection is specifically orthogonal). You need to compute all three quantities first: SST, SSR and SSE.
+
+```{r}
+SST <- len_vec(y_avg_adj)^2
+SSR <- len_vec(h_yhat_adj)^2
+SSE <- len_vec(e1)^2
+
+expect_equal(SST, SSR + SSE)
+```
+
+
+Create a matrix that is $(p + 1) \times (p + 1)$ full of NA's. Label the columns the same columns as X. Do not label the rows. For the first row, find the OLS estimate of the $y$ regressed on the first column only and put that in the first entry. For the second row, find the OLS estimates of the $y$ regressed on the first and second columns of $X$ only and put them in the first and second entries. For the third row, find the OLS estimates of the $y$ regressed on the first, second and third columns of $X$ only and put them in the first, second and third entries, etc. For the last row, fill it with the full OLS estimates.
+
+```{r}
+M <- matrix(NA, ncol(X), ncol(X))
+colnames(M) <- colnames(X)
+
+for (j in 1:ncol(X)){
+  X_j <- X[ , 1:j, drop = FALSE]
+  b <- solve(t(X_j) %*% X_j) %*% t(X_j) %*% y
+  M[j, 1:j] <- b
+}
+
+M
+```
+
+Examine this matrix. Why are the estimates changing from row to row as you add in more predictors?
+
+  Because the weight of the missing predictors is included in the present predictors.
+
+
+Clear the workspace and load the diamonds dataset in the package `ggplot2`.
+
+```{r}
+rm(list = ls())
+
+pacman::p_load(ggplot2)
+data("diamonds")
+head(diamonds)
+```
+
+
+Extract $y$, the price variable and `col`, the nominal variable "color" as vectors.
+
+```{r}
+y <- diamonds$price
+col <- diamonds$color
+```
+
+
+Convert the `col` vector to $X$ which contains an intercept and an appropriate number of dummies. Let the color G be the refernce category as it is the modal color. Name the columns of $X$ appropriately. The first should be "(Intercept)". Delete `col`.
+
+```{r}
+level <- levels(col)
+X <- rep(1, length(y))
+temp <- c()
+for (i in 1:length(level)){
+  temp <- ifelse(col == level[i], 1, 0)
+  X <- cbind(X, temp)
+}
+
+colnames(X) <- c("(Intercept)", levels(col))
+X <- X[ , -5]
+```
+
+
+Repeat the iterative exercise above we did for Boston here.
+
+```{r}
+M <- matrix(NA, ncol(X), ncol(X))
+colnames(M) <- colnames(X)
+
+for (j in 1:ncol(X)){
+  X_j <- X[ , 1:j, drop = FALSE]
+  b <- solve(t(X_j) %*% X_j) %*% t(X_j) %*% y
+  M[j, 1:j] <- b
+}
+
+M
+```
+
+Why didn't the estimates change as we added more and more features?
+
+  It did change because we added more weight each time.
+
+
+Model `price` with both `color` and `clarity` with and without an intercept and report the coefficients.
+
+```{r}
+mod1 <- lm(price ~ color + clarity, data = diamonds)
+mod2 <- lm(price ~ 0 + color + clarity, data = diamonds)
+
+coef(mod1)
+coef(mod2)
+```
+
+Which coefficients did not change between the models and why?
+
+  The clarity coefficients did not change between the models because it was not included in the intercept.
+
+
+Create a 2x2 matrix with the first column 1's and the next column iid normals. Find the absolute value of the angle (in degrees, not radians) between the two columns.
+
+```{r}
+m <- matrix(c(1, 1, rnorm(2)), 2, 2)
+theta_in_rad <- acos((m[ , 1] %*% m[ , 2]) / (sqrt(sum(m[ , 1]^2)) * sqrt(sum(m[ , 2]^2))))
+theta_in_rad * 180 / pi
+```
+
+
+Repeat this exercise $Nsim = 1e5$ times and report the average absolute angle.
+
+```{r}
+Nsim <- 1e5
+abs_angle <- c()
+
+for (i in 1:Nsim){
+  m <- matrix(c(1, 1, rnorm(2)), 2, 2)
+  theta_in_rad <- acos((m[ , 1] %*% m[ , 2]) / (sqrt(sum(m[ , 1]^2)) * sqrt(sum(m[ , 2]^2))))
+  abs_angle <- c(abs_angle, theta_in_rad * 180 / pi)
+}
+
+mean(abs_angle)
+```
+
+
+Create a nx2 matrix with the first column 1's and the next column iid normals. Find the absolute value of the angle (in degrees, not radians) between the two columns. For $n \in {10, 50, 100, 200, 500, 1000}$, report the average absolute angle over $Nsim = 1e5$ simulations.
+
+```{r}
+n <- c(10, 50, 100, 200, 500, 1000)
+avg <- c()
+for (i in 1:length(n)){
+  m <- cbind(rep(1, n[i]), rnorm(n[i]))
+  for (j in 1:Nsim){
+    theta_in_rad <- acos((m[ , 1] %*% m[ , 2]) / (sqrt(sum(m[ , 1]^2)) * sqrt(sum(m[ , 2]^2))))
+    abs_angle <- c(abs_angle, theta_in_rad * 180 / pi)
+  }
+  avg <- c(avg, mean(abs_angle))
+}
+avg
+```
+
+What is this absolute angle converging to? Why does this make sense?
+
+  The angle is converging to 90 degrees because the columns are orthogonal
+
+
+Create a vector $y$ by simulating $n = 100$ standard iid normals. Create a matrix of size 100 x 2 and populate the first column by all ones (for the intercept) and the second column by 100 standard iid normals. Find the $R^2$ of an OLS regression of `y ~ X`. Use matrix algebra.
+
+```{r}
+n <- 100
+y <- as.matrix(rnorm(n))
+X <- cbind(rep(1, n), rnorm(n))
+
+H <- X %*% solve(t(X) %*% X) %*% t(X)
+yhat <- H %*% y 
+
+len_vec <- function(v){sqrt(sum(v^2))}
+Rsq <- (len_vec(yhat - mean(y))^2)/(len_vec(y - mean(y))^2)
+Rsq
+```
+
+
+Write a for loop to each time bind a new column of 100 standard iid normals to the matrix $X$ and find the $R^2$ each time until the number of columns is 100. Create a vector to save all $R^2$'s. What happened??
+
+```{r}
+R2s <- c(Rsq)
+SST <- len_vec(y - mean(y))^2
+for (i in 3:100){
+  X <- cbind(X, rnorm(n))
+  H <- X %*% solve(t(X) %*% X) %*% t(X)
+  yhat <- H %*% y 
+
+  Rsq <- (len_vec(yhat - mean(y))^2)/SST # SSR/SST
+  R2s <- c(R2s, Rsq)
+}
+
+R2s
+
+```
+
+
+Add one final column to $X$ to bring the number of columns to 101. Then try to compute $R^2$. What happens?
+
+```{r }
+# X <- cbind(X, rnorm(n))
+# H <- X %*% solve(t(X) %*% X) %*% t(X) # X is no longer invertable
+# yhat <- H %*% y 
+# Rsq <- (len_vec(yhat - mean(y))^2)/(len_vec(y - mean(y))^2)
+# Rsq
+```
+
+
