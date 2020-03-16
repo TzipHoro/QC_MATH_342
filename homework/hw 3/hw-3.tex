@@ -1,0 +1,573 @@
+\documentclass[12pt]{article}
+
+\include{preamble}
+
+\newtoggle{professormode}
+%\toggletrue{professormode} %STUDENTS: DELETE or COMMENT this line
+
+
+
+\title{MATH 390.4 Spring 2020 Homework \#3}
+
+\author{Tziporah Horowitz} %STUDENTS: write your name here
+
+\iftoggle{professormode}{
+\date{Due noon Wedndesday, March 11, 2020 under the door of KY604\\ \vspace{0.5cm} \small (this document last updated \currenttime~on \today)}
+}
+
+\renewcommand{\abstractname}{Instructions and Philosophy}
+
+\begin{document}
+\maketitle
+
+\iftoggle{professormode}{
+\begin{abstract}
+The path to success in this class is to do many problems. Unlike other courses, exclusively doing reading(s) will not help. Coming to lecture is akin to watching workout videos; thinking about and solving problems on your own is the actual ``working out.''  Feel free to \qu{work out} with others; \textbf{I want you to work on this in groups.}
+
+Reading is still \textit{required}. For this homework set, read Chapters 3-6 of Silver's book. You should be googling and reading about all the concepts introduced in class online. This is your responsibility to supplement in-class with \textit{your own} readings.
+
+The problems below are color coded: \ingreen{green} problems are considered \textit{easy} and marked \qu{[easy]}; \inorange{yellow} problems are considered \textit{intermediate} and marked \qu{[harder]}, \inred{red} problems are considered \textit{difficult} and marked \qu{[difficult]} and \inpurple{purple} problems are extra credit. The \textit{easy} problems are intended to be ``giveaways'' if you went to class. Do as much as you can of the others; I expect you to at least attempt the \textit{difficult} problems. 
+
+This homework is worth 100 points but the point distribution will not be determined until after the due date. See syllabus for the policy on late homework.
+
+Up to 7 points are given as a bonus if the homework is typed using \LaTeX. Links to instaling \LaTeX~and program for compiling \LaTeX~is found on the syllabus. You are encouraged to use \url{overleaf.com}. If you are handing in homework this way, read the comments in the code; there are two lines to comment out and you should replace my name with yours and write your section. The easiest way to use overleaf is to copy the raw text from hwxx.tex and preamble.tex into two new overleaf tex files with the same name. If you are asked to make drawings, you can take a picture of your handwritten drawing and insert them as figures or leave space using the \qu{$\backslash$vspace} command and draw them in after printing or attach them stapled.
+
+The document is available with spaces for you to write your answers. If not using \LaTeX, print this document \textit{including this first page} and write in your answers. \inred{I do not accept homeworks which are \textit{not} on this printout.}
+
+\end{abstract}
+
+\thispagestyle{empty}
+\vspace{1cm}
+NAME: \line(1,0){380}
+\clearpage
+}
+
+
+
+\section{Silver's Book, Chapters 3-6} % and also we now have $f_{pr}, h^*_{pr}, g_{pr}, p_{th}$, etc from probabilistic classification as well as different types of validation schemes)
+
+For all parts in this question, answer using notation from class (i.e. $t ,f, g, h^*, \delta, \epsilon, e, t, z_1, \ldots, z_t, \\ \mathbb{D}, \mathcal{H}, \mathcal{A}, \mathcal{X}, \mathcal{Y}, X, y, n, p, x_{\cdot 1}, \ldots, x_{\cdot p}$, $x_{1 \cdot}, \ldots, x_{n \cdot}$, etc.)
+
+\begin{enumerate}
+
+\easysubproblem{What algorithm that we studied in class is PECOTA most similar to?
+\ans PECOTA is most similar to k nearest neighbors.
+}
+
+\easysubproblem{Is baseball performance as a function of age a linear model? Discuss.
+\ans Baseball performance as a function of age is not a linear model because it is parabolic, with different players peaking at different ages.
+}
+
+\intermediatesubproblem{How can baseball scouts do better than a prediction system like PECOTA?
+\ans Scouts did better than PECOTA because they used a hybrid approach. They used both human judgement and statistics and therefore had more data available to them.
+}
+
+\intermediatesubproblem{Why hasn't anyone (at the time of the writing of Silver's book) taken advantage of Pitch f/x data to predict future success?
+\ans At the time, they did have complete 3-dimensional recordings of everything on the baseball field.
+}
+
+\hardsubproblem{Chapter 4 is all about predicting weather. Broadly speaking, what is the problem with weather predictions? Make sure you use the framework and notation from class. This is not an easy question and we will discuss in class. Do your best.
+\ans The problem with predicting weather is that it is too chaotic. The weather behaves like a dynamic system, so $f$ cannot be linear. Slight inaccuracies in prior data ($\mathbb{D}$) cause much larger inaccuracies in the predictions. In addition, to predict accurately, you have to increase the number of dimensions; however, if you increase the number of dimensions, you're left with exponentially more equations to solve. 
+}
+
+\pagebreak
+
+\easysubproblem{Why does the weatherman lie about the chance of rain? And where should you go if you want honest forecasts?
+\ans Weathermen lie about the chance of rain for economic incentives. It give them room to for fewer complaints when it does rain in a low probability case. To get more "honest" forecasts, you should turn to The National Weather Service.
+}
+
+\hardsubproblem{Chapter 5 is all about predicting earthquakes. Broadly speaking, what is the problem with earthquake predictions? It is \textit{not} the same as the problem of predicting weather. Read page 162 a few times. Make sure you use the framework and notation from class.
+\ans We cannot truly measure $X$ so it becomes too noisy and the models are left with too much residual error, $e$.
+}
+
+\easysubproblem{Silver has quite a whimsical explanation of overfitting on page 163 but it is really educational! What is the nonsense predictor in the model he describes?
+\ans Using the color of a lock to match it to known combinations. It is overly specific.
+}
+
+
+\easysubproblem{John von Neumann was credited with saying that \qu{with four parameters I can fit an elephant and with five I can make him wiggle his trunk}. What did he mean by that and what is the message to you, the budding data scientist? 
+\ans Neumann meant that when you model noise, it creates illustrations of reality that are inaccurate. It's important to recognize the difference between necessary features and noise.
+}
+
+\hardsubproblem{Chapter 6 is all about predicting unemployment, an index of macroeconomic performance of a country. Broadly speaking, what is the problem with unemployment predictions? It is \textit{not} the same as the problem of predicting weather or earthquakes. Make sure you use the framework and notation from class.
+\ans Economic concepts are hard to predict because they rely on economic policy; once we begin to measure $\mathbb{D}$, its behavior begins to change. Similar to weather systems, economic data are chaotic. Nevertheless, meteorologists have a stronger understanding of the atmosphere and can therefore make more accurate forecasts, while economists cannot.
+}
+
+\extracreditsubproblem{Many times in this chapter Silver says something on the order of \qu{you need to have theories about how things function in order to make good predictions.} Do you agree? Discuss.
+\ans In order to make good predictions, you need a good $X$. Since there is no way of knowing the true causal inputs, the definition of $X$ is subjective to your knowledge about $y$. So, the more you know about how $y$ functions, the better your judgement will be about choosing $X$.
+}
+
+
+\end{enumerate}
+
+\section{Multivariate Linear Model Fitting Using LS}
+
+\begin{enumerate}
+
+\hardsubproblem{Derive $\partialop{\c}{\c^\top A \c}$ where $\c \in \reals^n$ and $A \in \reals^{n \times n}$ but \textit{not} symmetric. Get as far as you can.
+\ans 
+\begin{align*}
+    \partialop{\c}{\c^\top A \c} &= \partialop{\c}{\c^\top \begin{bmatrix}
+        \a_{1\cdot} \\
+        \vdots \\
+        \a_{n\cdot}
+    \end{bmatrix} \c} \\
+    &= \partialop{\c}{\c^\top \begin{bmatrix}
+        \a_{1\cdot} \c \\
+        \vdots \\
+        \a_{n\cdot} \c
+    \end{bmatrix}} \\
+    &= \partialop{\c}{c_1 \a_{1\cdot} \c + \ldots + c_n \a_{n\cdot} \c} \\
+    &= \partialop{\c}{c_1(a_{11}c_1 + \ldots + a_{1n}c_n) + \ldots +  c_n(a_{n1}c_1 + \ldots + a_{nn}c_n)} \\
+    &= \partialop{\c}{(c_1^2a_{11} + c_1a_{12}c_2 + \ldots + c_1a_{1n}c_n) + \ldots + (c_na_{n1}c_1 + \ldots + c_n^2a_{nn})} \\
+    & \ \ \ \ \ \ \Rightarrow \frac{\partial}{\partial c_1} = (a_{1 \cdot} + a_{\cdot 1}) \c \\
+    &= \begin{bmatrix}
+        (a_{1 \cdot} + a_{\cdot 1}) \c \\
+        \vdots \\
+        (a_{n \cdot} + a_{\cdot n}) \c
+    \end{bmatrix} \\
+    &= \begin{bmatrix}
+        \a_{1\cdot} \\
+        \vdots \\
+        \a_{n\cdot}
+    \end{bmatrix} \c + \begin{bmatrix}
+        \a_{\cdot 1} \\
+        \vdots \\
+        \a_{\cdot n}
+    \end{bmatrix} \c
+\end{align*}
+}
+
+\easysubproblem{Given matrix $X \in \reals^{n \times (p+1)}$, full rank and first column consisting of the $\onevec_n$ vector, rederive the least squares solution $\vect{b}$ (the vector of coefficients in the linear model shipped in the prediction function $g$). No need to rederive the facts about vector derivatives.
+\ans 
+\begin{align*}
+    \partialop{\vect{w}}{\text{SSE}} &= \partialop{\vect{w}}{\y^\top \y - 2\vect{w}^\top X^\top \y + \vect{w}^\top X^\top X \vect{w}} \\
+    &= \vect{0}_3 - 2X^\top \y + 2X^\top X \vect{w} \setEqual 0
+\end{align*}
+\begin{align*}
+    X^\top X \vect{w} &= X^\top \y \\
+    \vect{w} &= (X^\top X)^{-1} X^\top \y
+\end{align*}
+}
+
+\intermediatesubproblem{Consider the case where $p = 1$. Show that the solution for $\vect{b}$ you just derived is the same solution that we proved for simple regression in Lecture 8. That is, the first element of $\vect{b}$ is the same as $b_0 = \ybar - r \frac{s_y}{s_x}\xbar$ and the second element of $\vect{b}$ is $b_1 = r \frac{s_y}{s_x}$.
+\ans
+\begin{align*}
+    \vect{b} &= (X^\top X)^{-1} X^\top \y \\
+    &= \begin{pmatrix}
+        \begin{bmatrix}
+            1 & \ldots & 1 \\
+            x_1 & \ldots & x_n
+        \end{bmatrix}
+        \begin{bmatrix}
+            1 & x_1 \\
+            \vdots & \vdots \\
+            1 & x_n 
+        \end{bmatrix}
+    \end{pmatrix}^{-1} \begin{bmatrix}
+        1 & \ldots & 1 \\
+        x_1 & \ldots & x_n
+    \end{bmatrix} \begin{bmatrix}
+        y_1 \\
+        \vdots \\
+        y_n
+    \end{bmatrix} \\
+    &= \begin{pmatrix}
+        \begin{bmatrix}
+            1 & \ldots & 1 \\
+            x_1 & \ldots & x_n
+        \end{bmatrix}
+        \begin{bmatrix}
+            1 & x_1 \\
+            \vdots & \vdots \\
+            1 & x_n 
+        \end{bmatrix}
+    \end{pmatrix}^{-1} \begin{bmatrix}
+        \sum_{i = 1}^n y_i \\
+        \sum_{i = 1}^n x_i y_i
+    \end{bmatrix} \\
+    &= \begin{bmatrix}
+        n & \sum_{i = 1}^n x_i \\
+        \sum_{i = 1}^n x_i & \sum_{i = 1}^n x_i^2
+    \end{bmatrix}^{-1} \begin{bmatrix}
+        n \ybar \\
+        \sum_{i = 1}^n x_i y_i
+    \end{bmatrix} \\
+    &= \frac{1}{n \sum x_i^2 - n^2 \xbar^2} \begin{bmatrix}
+        \sum x_i^2 & -n \xbar \\
+        -n \xbar & n
+    \end{bmatrix} \begin{bmatrix}
+        n \ybar \\
+        \sum x_i y_i
+    \end{bmatrix} \\
+    &= \oneover{n(\sum x_i^2 - n\xbar^2)} \begin{bmatrix}
+        \sum x_i^2 \sum y_i - n \xbar \sum x_iy_i \\
+        -n \xbar \sum y_i + n \sum x_iy_i
+    \end{bmatrix} \\
+    &= \begin{bmatrix}
+        \ybar - \frac{\sum x_iy_i - n\xbar\ybar}{\sum x_i^2 - n\xbar^2} \xbar \\
+        \frac{\sum x_iy_i - n\xbar\ybar}{\sum x_i^2 - n\xbar^2}
+    \end{bmatrix} \\
+    &= \begin{bmatrix}
+        \ybar - r\frac{s_y}{s_x} \xbar \\
+        r\frac{s_y}{s_x}
+    \end{bmatrix}
+\end{align*}
+}
+
+\easysubproblem{If $X$ is rank deficient, how can you solve for $\vect{b}$? Explain in English.
+\ans If $X$ is rank deficient, $X^\top X$ will not be invertable, so to solve for $\vect{b}$ you should remove the linearly dependent columns of $X$.
+}
+
+\hardsubproblem{Prove $\rank{X} =\rank{X^\top X}$.
+\ans Definition: $\rank{X} = \dim[X] - N[X]$
+\begin{enumerate}
+    \item Let $X \in N[A]$, \begin{align*}
+            AX &= \vect{0} \Rightarrow A^\top AX = \vect{0} \\
+            &\Rightarrow X \in N[A^\top A]
+        \end{align*} so, $N[A] 	\subseteq N[A^\top A]$.
+        \pagebreak
+    \item Let $X \in N[A^\top A]$, \begin{align*}
+            A^\top A X &= \vect{0} \\
+            X^\top A^\top A X &= \vect{0} \\
+            (AX)^\top AX &= \vect{0} \Rightarrow AX = \vect{0} \\
+            &\Rightarrow X \in N[A]
+        \end{align*} so, $N[A^\top A] \subseteq N[A]$.
+\end{enumerate}
+By (a) and (b), $N[A] = N[A^\top A]$ and $\dim[A] = \dim[A^\top A]$. Therefore, $\rank{X} =\rank{X^\top X}$.
+}
+
+\hardsubproblem{Given matrix $X \in \reals^{n \times (p+1)}$, full rank and first column consisting of the $\onevec_n$ vector, now consider cost multiples (\qu{weights}) $c_1, c_2, \ldots, c_n$ for each mistake $e_i$. As an example, previously the mistake for the 17th observation was $e_{17} := y_{17} - \hat{y}_{17}$ but now it would be $e_{17} := c_{17} (y_{17} - \hat{y}_{17})$.  Derive the weighted least squares solution $\vect{b}$. No need to rederive the facts about vector derivatives. Hints: (1) show that SSE is a quadratic form with the matrix $C$ in the middle (2) Split this matrix up into two pieces i.e. $C = C^{\half} C^{\half}$, distribute and then foil (3) note that a scalar value equals its own transpose and (4) use the vector derivative formulas.
+\ans
+\begin{align*}
+    \text{SSE} &= (\y - X\vect{b})^\top C (\y - X\vect{b}) \\
+    &= (\y^\top C^{\oneover{2}} - \vect{b}^\top X^\top C^\oneover{2})(C^\oneover{2} \y - C^\oneover{2} X \vect{b}) \\
+    &= \y^\top C \y - \y^\top C X \vect{b} - \vect{b}^\top X^\top C \y + \vect{b}^\top X^\top CX \vect{b} \\
+    \partialop{\vect{b}}{\text{SSE}} &= \vect{0}_{p+1} - 2X^\top C \y + 2X^\top CX \vect{b} \setEqual \vect{0}_{p+1}
+\end{align*}
+\begin{align*}
+    X^\top CX \vect{b} &= X^\top C \y \\
+    \vect{b} &= (X^\top CX)^{-1} X^\top C \y
+\end{align*}
+}
+
+
+\hardsubproblem{If $p=1$, prove $r^2 = R^2$ i.e. the linear correlation is the same as proportion of sample variance explained in a least squares linear model.
+\ans
+\begin{align*}
+    R^2 &= \frac{\text{SSR}}{\text{SST}} \\
+    &= \frac{\sum (\hat{y}_i - \ybar)^2}{\sum (y_i - \ybar)^2} \\
+    &= \frac{\sum \hat{y}_i^2 - n\ybar^2}{\sum (y_i - \ybar)^2} \\
+    &= \frac{\sum (b_0 + b_1x_i)^2 - n\ybar^2}{(n-1)s_y^2} \\
+    &= \frac{\sum (b_0^2 + 2b_0b_1x_i + b_1^2x_i^2) - n\ybar^2}{(n-1)s_y^2} \\
+    &= \frac{nb_0^2 + 2b_0b_1 \sum x_i + b_1^2 \sum x_i^2 - n\ybar^2}{(n-1)s_y^2} \\
+    &= \frac{(\ybar - b_1\xbar)^2 n + 2(\ybar - b_1\xbar)b_1n\xbar + b_1^2 \sum x_i^2 - n\ybar^2}{(n-1)s_y^2} \\
+    &= \frac{b_1^2 \sum x_i^2 - b_1^2\xbar^2n}{(n-1)s_y^2} \\
+    &= \frac{b_1^2 (\sum x_i^2 - \xbar^2 n)}{(n-1)s_y^2} \\
+    &= \frac{r^2 \frac{s_y^2}{s_x^2} \sum (x_i - \xbar)^2}{(n-1)s_y^2} \\
+    &= r^2
+\end{align*}
+}
+
+\intermediatesubproblem{Prove that $g(\bracks{1 ~\xbar_1~ \xbar_2~ \ldots~ \xbar_p}) =\bar{y}$ in OLS.
+\ans 
+\begin{align*}
+    \ybar &= \oneover{n} \sum y_i \\
+    &= \oneover{n} \sum (b_0 + b_1x_{1_i} + \ldots + b_px_{p_i} + e_i) \\
+    &= \oneover{n} \sum b_0 + \oneover{n} \sum b_1x_{1_i} + \ldots + \oneover{n} \sum b_px_{p_i} + \oneover{n} \sum e_i \\
+    &= b_0 + b_1\xbar_1 + \ldots + b_p\xbar_p + \bar{e} \\
+    &= b_0 + b_1\xbar_1 + \ldots + b_p\xbar_p \\
+    &= g(\bracks{1 ~\xbar_1~ \xbar_2~ \ldots~ \xbar_p})
+\end{align*}
+}
+
+\intermediatesubproblem{Prove that $\bar{e} = 0$ in OLS.
+\ans
+\begin{align*}
+    \bar{e} &= \oneover{n} \sum (y_i - \hat{y}_i) \\
+    &= \oneover{n} \sum y_i - \oneover{n} \sum (b_0 + b_1x_{1_i} + \ldots + b_px_{p_i}) \\
+    &= \ybar - (b_0 + b_1\xbar_1 + \ldots + b_p\xbar_p) \\
+    &= \ybar - \ybar \\
+    &= 0
+\end{align*}
+}
+
+\hardsubproblem{If you model $\y$ with one categorical nominal variable that has levels $A, B, C$, prove that the OLS estimates look like $\ybar_A$ if $x = A$, $\ybar_B$ if $x = B$ and $\ybar_C$ if $x = C$. You can choose to use an intercept or not. Likely without is easier.
+\ans Show $\vect{b} = (X^\top X)^{-1} X^\top \y$ is $\ybar_A$ if $x = A$, $\ybar_B$ if $x = B$ and $\ybar_C$ if $x = C$.
+\begin{align*}
+    X^\top \y &= \begin{array}{c c c} 
+        A \\
+        B \\
+        C 
+    \end{array}
+    \begin{bmatrix}
+        1 & \ldots & 1 & 0 & \ldots & \ldots & \ldots & \ldots & 0 \\
+        0 & \ldots & 0 & 1 & \ldots & 1 & 0 & \ldots & 0 \\
+        0 & \ldots & \ldots & \ldots & \ldots & 0 & 1 & \ldots & 1
+    \end{bmatrix} \begin{bmatrix}
+        y_1 \\
+        \vdots \\
+        y_n
+    \end{bmatrix} \\
+    &= \begin{bmatrix}
+        \sum y \indic{A = 1} \\
+        \sum y \indic{B = 1} \\
+        \sum y \indic{C = 1}
+    \end{bmatrix} \\
+    X^\top X &= \begin{array}{c c c} 
+        A \\
+        B \\
+        C 
+    \end{array}
+    \begin{bmatrix}
+        1 & \ldots & 1 & 0 & \ldots & \ldots & \ldots & \ldots & 0 \\
+        0 & \ldots & 0 & 1 & \ldots & 1 & 0 & \ldots & 0 \\
+        0 & \ldots & \ldots & \ldots & \ldots & 0 & 1 & \ldots & 1
+    \end{bmatrix} \begin{array}{c c}
+        \begin{array}{c c c}
+            A & B & C \\
+        \end{array} \\
+        \begin{bmatrix}
+            1 & 0 & 0 \\
+            \vdots & \vdots & \vdots \\
+            1 & 0 & 0 \\
+            0 & 1 & 0 \\
+            \vdots & \vdots & \vdots \\
+            0 & 1 & 0 \\
+            0 & 0 & 1 \\
+            \vdots & \vdots & \vdots \\
+            0 & 0 & 1
+        \end{bmatrix}
+    \end{array} \\
+    &= \begin{bmatrix}
+        n_A & 0 & 0 \\
+        0 & n_B & 0 \\
+        0 & 0 & n_C
+    \end{bmatrix} \\
+    (X^\top X)^{-1} &= \begin{bmatrix}
+        \oneover{n_A} & 0 & 0 \\
+        0 & \oneover{n_B} & 0 \\
+        0 & 0 & \oneover{n_C}
+    \end{bmatrix} \\
+    \vect{b} = (X^\top X)^{-1} X^\top \y &= \begin{bmatrix}
+        \oneover{n_A} & 0 & 0 \\
+        0 & \oneover{n_B} & 0 \\
+        0 & 0 & \oneover{n_C}
+    \end{bmatrix} \begin{bmatrix}
+        \sum y \indic{A = 1} \\
+        \sum y \indic{B = 1} \\
+        \sum y \indic{C = 1}
+    \end{bmatrix} \\
+    &= \begin{bmatrix}
+        \oneover{n_A} \sum y \indic{A = 1} \\
+        \oneover{n_B} \sum y \indic{B = 1} \\
+        \oneover{n_C} \sum y \indic{C = 1}
+    \end{bmatrix} \\
+    &= \begin{bmatrix}
+        \ybar_A \\
+        \ybar_B \\
+        \ybar_C
+    \end{bmatrix}
+\end{align*}
+}
+
+\pagebreak
+
+\end{enumerate}
+
+\section{Orthogonal Projection and QR Decomposition}
+
+\begin{enumerate}
+
+\hardsubproblem{[MA] Prove that if a square matrix is both symmetric and idempotent then it must be an orthogonal projection matrix.}\spc{10}
+
+\easysubproblem{Prove that $I_n$ is an orthogonal projection matrix $\forall n$.
+\ans 
+\begin{enumerate}
+    \item Symmetry: $I_n^\top = I_n$
+    \item Idempotency: $I_nI_n = I_n$
+\end{enumerate}
+}
+
+
+\easysubproblem{What subspace does $I_n$ project onto?
+\ans $\reals^n$
+}
+
+\easysubproblem{Consider least squares linear regression using a design matrix $X$ with rank $p + 1$. What are the degrees of freedom in the resulting model? What does this mean?
+\ans There are $p+1$ degrees of freedom, i.e. $p+1$ independent parameters. 
+}
+
+
+\intermediatesubproblem{If you are orthogonally projecting the vector $\y$ onto the column space of $X$ which is of rank $p + 1$, derive the formula for $\proj{\colsp{X}}{\y}$. Is this the same as in OLS?
+\ans Yes,
+\begin{align*}
+    \proj{\colsp{X}}{\y} &= X\vect{w} \\
+    &\Rightarrow \begin{cases}
+        \x_1^\top (\y - X \vect{w}) = 0 \\
+        \vdots \\
+        \x_n^\top (\y - X \vect{w}) = 0
+    \end{cases}
+\end{align*}
+\begin{align*}
+    \begin{bmatrix}
+        \x_1 \\
+        \vdots \\
+        \x_n
+    \end{bmatrix} (\y - X \vect{w}) &= \vect{0}_n \\
+    X^\top (\y - X \vect{w}) &= \vect{0}_n \\
+    X^\top \y &= X^\top X \vect{w} \\
+    \vect{w} &= (X^\top X)^{-1} X^\top \y
+\end{align*}
+}
+
+\pagebreak
+
+\hardsubproblem{We saw that the perceptron is an \textit{iterative algorithm}. This means that it goes through multiple iterations in order to converge to a closer and closer $\vect{w}$. Why not do the same with linear least squares regression? Consider the following. Regress $\y$ using $\X$ to get $\yhat$. This generates residuals $\e$ (the leftover piece of $\y$ that wasn't explained by the regression's fit, $\yhat$). Now try again! Regress $\e$ using $\X$ and then get new residuals $\e_{new}$. Would $\e_{new}$ be closer to $\vect{0}_n$ than the first $\e$? That is, wouldn't this yield a better model on iteration \#2? Yes/no and explain.
+\ans No, the projection mapping yields the least squares error. Any further projection onto the $\colsp{X}$ would only yield the same result.
+}
+
+
+\intermediatesubproblem{Prove that $\Q^\top = \Q^{-1}$ where $\Q$ is an orthonormal matrix such that $\colsp{\Q} = \colsp{\X}$ and $\Q$ and $\X$ are both matrices $\in \reals^{n \times (p+1)}$. Hint: this is purely a linear algebra exercise.
+\ans 
+\begin{align*}
+    \Q^\top &= \Q^{-1} \Rightarrow \Q^\top \Q = \Q^{-1} \Q = I_n \\
+    \Q^\top \Q &= \begin{bmatrix}
+        \vect{q}_1^\top \\
+        \vdots \\
+        \vect{q}_n^\top
+    \end{bmatrix} \begin{bmatrix}
+        \vect{q}_1 & \ldots & \vect{q}_n
+    \end{bmatrix} \\
+    &= \begin{bmatrix}
+        \vect{q}_1^\top \vect{q}_1 & 0 & \ldots & 0 \\
+        0 & \ddots & & \vdots \\
+        \vdots & & \ddots & 0 \\
+        0 & \ldots & 0 & \vect{q}_n^\top \vect{q}_n
+    \end{bmatrix} = I_n
+\end{align*}
+}
+
+
+\intermediatesubproblem{Prove that the least squares projection $\vect{H} = \XXtXinvXt = \Q\Q^\top$.
+\ans 
+\begin{align*}
+    \proj{V}{\a} &= \vect{H}\a \text{,  Let } || \v_1 || = \ldots = || \v_d || = 1 \\
+    \vect{H} &= \begin{bmatrix}
+        \v_1 \v_1^\top & \ldots & \v_d \v_d^\top
+    \end{bmatrix} \\ 
+    &= \begin{bmatrix}
+        v_{11} \v_1 & \ldots & v_{1n} \v_1
+    \end{bmatrix} + \begin{bmatrix}
+        v_{21} \v_2 & \ldots & v_{2n} \v_2
+    \end{bmatrix} + \ldots + \begin{bmatrix}
+        v_{d1} \v_d & \ldots & v_{dn} \v_d
+    \end{bmatrix} \\
+    &= \begin{bmatrix}
+        \v_1 & \v_2 & \ldots & \v_d
+    \end{bmatrix} \begin{bmatrix}
+        \v_1^\top \\
+        \vdots \\
+        \v_d^\top
+    \end{bmatrix} \\
+    &= \Q \Q^\top
+\end{align*}
+}
+
+\pagebreak
+
+\intermediatesubproblem{Prove that an orthogonal projection onto the $\colsp{\Q}$ is the same as the sum of the projections onto each column of $\Q$.
+\ans 
+\begin{align*}
+    \proj{Q}{\a} &= \Q(\Q^\top \Q)^{-1} \Q^\top \a \\
+    &= \Q I_n \Q^\top \a \\
+    &= \Q \Q^\top \a \\ 
+    &= \sum \vect{q}_i \vect{q}_i^\top \a \\
+    &= \sum \proj{\vect{q}_i}{\a}
+\end{align*}
+}
+
+\easysubproblem{Prove that adding a new column to $\X$ results in SST remaining the same.
+\ans 
+\begin{align*}
+    \text{SST} &= \text{SSR} + \text{SSE} \\
+    \text{SST}_{*} &= \text{SSR}_{*} + \text{SSE}_{*} \\
+    &= (\text{SSR} + k) + (\text{SSE} - k) \\
+    &= \text{SSR} + \text{SSE} + k - k \\
+    &= \text{SSR} + \text{SSE} \\
+    &= \text{SST}
+\end{align*}
+}
+
+
+
+
+
+\hardsubproblem{[MA] Prove that $\rank{\vect{H}} =\tr{\vect{H}}$. Hint: you will need to use facts about eigenvalues and the eigendecomposition of projection matrices that we learned in class.}\spc{10}
+
+
+\end{enumerate}
+
+\pagebreak
+
+\section{Extra Credit} 
+This is for students who want to get a taste of a first year linear model theory class at the graduate level. The prereq to do these problems is Math 368/621. Only attempt these if you have time!
+
+In linear modeling, $\mathcal{H} = \braces{\x \vect{w}~:~\vect{w} \in \reals^{p+1}}$ where $\x = \bracks{1~x_1~\ldots~x_p}$, a row vector. Thus, there is a best function $h^*(\x) = \x\bbeta$ where $\bbeta = \bracks{\beta_0~\beta_1~\ldots~\beta_p}^\top$, a column vector and $y = h^*(\x) = \x\bbeta + \mathcal{E}$. Imagine that for all $n$ observations in $\mathbb{D}$, the $\Y = X\bbeta + \bv{\mathcal{E}}$ where $\bv{\mathcal{E}} \sim \multnormnot{n}{\vect{0}_n}{\sigsq\I_n}$ and $\Y$ is a random vector with dimension $n$ modeling the responses of which $\y$ is a random realization. Assume $\sigsq$ is known. 
+
+
+\begin{enumerate}
+
+\extracreditsubproblem{Show that $\Y\sim \multnormnot{n}{X\bbeta}{\sigsq\I_n}$.}\spc{3}
+
+\extracreditsubproblem{Let $\B = \XtXinv\Xt\Y$, i.e. the r.v. that represents the OLS estimator of which $\vect{b}$ is one realization which changes based on the realizations of the error-vector r.v. $\bv{\mathcal{E}}$. Find the distribution of $\B$ and once this is done, its expectation and variance-covariance matrix. Do the entries in $\B$ have dependence?}\spc{3}
+
+\extracreditsubproblem{Find the distribution of $\hat{\Y}$, the vector r.v. of predictions.}\spc{3}
+
+\extracreditsubproblem{Find the distribution of $\bv{E}$, the vector r.v. of residuals.}\spc{3}
+
+\extracreditsubproblem{Find the distribution of $SST$.}\spc{3}
+
+\extracreditsubproblem{Find the distribution of $SSE$.}\spc{3}
+
+\extracreditsubproblem{Find the distribution of $SSR$.}\spc{3}
+
+
+\extracreditsubproblem{Find the distribution of $R^2$.}\spc{3}
+
+\extracreditsubproblem{Now let $\sigsq$ be unknown. Use the MSE as its estimate. What is the distribution of $\B$ now?}\spc{3}
+
+\extracreditsubproblem{What is the distribution of MSE?}\spc{3}
+
+\extracreditsubproblem{What is the distribution of $R^2$?}\spc{3}
+
+\extracreditsubproblem{Let $\vect{U} \sim \multnormnot{n}{\zerovec_n}{\I_n}$ independent of $\vect{V} \sim \multnormnot{n}{\zerovec_n}{\I_n}$. Let $\theta$ be the r.v. model of the angle between $\vect{U}$ and $\vect{V}$. How is $\theta$ distributed?}
+
+\end{enumerate}
+
+
+\end{document}
+
+%%%%%%%%%%%%%%%%%%FOR HW4
+
+
+%\hardsubproblem{Trouble in paradise. Prove that the SSE of a multivariate linear least squares model always decreases (equivalently, $R^2$ always increases) upon the addition of a new independent predictor. Keep in mind this holds true even if this new predictor has no information about the true causal inputs to the phenomenon $y$.}\spc{9}
+
+%\intermediatesubproblem{Why is this a bad thing? Explain in English.}\spc{3}
+
+\problem{These are questions related to the concept of validation.}
+
+\begin{enumerate}
+
+\easysubproblem{What is \textit{model validation} and why is it important?}\spc{3}
+
+\easysubproblem{If you are giving a dataset $\mathbb{D}$, what is the problem with truly validating models?}\spc{3}
+
+\easysubproblem{To get around this fundamental problem, we assumed stationarity. Define this term.}\spc{3}
+
+\easysubproblem{Assuming stationarity, how can we do model validation?}\spc{3}
+
+\easysubproblem{What is the cost of this procedure?}\spc{3}
+
+\hardsubproblem{What are some limits of this procedure?}\spc{5}
+\end{enumerate}
