@@ -1,0 +1,291 @@
+\documentclass[12pt]{article}
+
+\include{preamble}
+
+\newtoggle{professormode}
+%\toggletrue{professormode} %STUDENTS: DELETE or COMMENT this line
+
+
+
+\title{MATH 390.4 / 650.2 Spring 2020 Homework \#4}
+
+\author{Tziporah Horowitz} %STUDENTS: write your name here
+
+\iftoggle{professormode}{
+\date{Due Monday, April 20, 2020 11:59PM by email\\ \vspace{0.5cm} \small (this document last updated \currenttime~on \today)}
+}
+
+\renewcommand{\abstractname}{Instructions and Philosophy}
+
+\begin{document}
+\maketitle
+
+\iftoggle{professormode}{
+\begin{abstract}
+The path to success in this class is to do many problems. Unlike other courses, exclusively doing reading(s) will not help. Coming to lecture is akin to watching workout videos; thinking about and solving problems on your own is the actual ``working out.''  Feel free to \qu{work out} with others; \textbf{I want you to work on this in groups.}
+
+Reading is still \textit{required}. For this homework set, read Chapters 7-11 of Silver's book. You should be googling and reading about all the concepts introduced in class online. This is your responsibility to supplement in-class with \textit{your own} readings.
+
+The problems below are color coded: \ingreen{green} problems are considered \textit{easy} and marked \qu{[easy]}; \inorange{yellow} problems are considered \textit{intermediate} and marked \qu{[harder]}, \inred{red} problems are considered \textit{difficult} and marked \qu{[difficult]} and \inpurple{purple} problems are extra credit. The \textit{easy} problems are intended to be ``giveaways'' if you went to class. Do as much as you can of the others; I expect you to at least attempt the \textit{difficult} problems. 
+
+This homework is worth 100 points but the point distribution will not be determined until after the due date. See syllabus for the policy on late homework.
+
+Up to 7 points are given as a bonus if the homework is typed using \LaTeX. Links to instaling \LaTeX~and program for compiling \LaTeX~is found on the syllabus. You are encouraged to use \url{overleaf.com}. If you are handing in homework this way, read the comments in the code; there are two lines to comment out and you should replace my name with yours and write your section. The easiest way to use overleaf is to copy the raw text from hwxx.tex and preamble.tex into two new overleaf tex files with the same name. If you are asked to make drawings, you can take a picture of your handwritten drawing and insert them as figures or leave space using the \qu{$\backslash$vspace} command and draw them in after printing or attach them stapled.
+
+The document is available with spaces for you to write your answers. If not using \LaTeX, print this document \textit{including this first page} and write in your answers. \inred{I do not accept homeworks which are \textit{not} on this printout.}
+
+\end{abstract}
+
+\thispagestyle{empty}
+\vspace{1cm}
+NAME: \line(1,0){380}
+\clearpage
+}
+
+
+\section{Silver's Book Chapters 7-11}
+These are questions about the rest of Silver's book, chapters 7--11. You can skim chapter 10 as it is not so relevant for the class. For all parts in this question, answer using notation from class (i.e. $t ,f, g, h^*, \delta, \epsilon, e, t, z_1, \ldots, z_t, \mathbb{D}, \mathcal{H}, \mathcal{A}, \mathcal{X}, \mathcal{Y}, X, y, n, p, x_{\cdot 1}, \ldots, x_{\cdot p}$, $x_{1 \cdot}, \ldots, x_{n \cdot}$, etc.) as well as in-class concepts (e.g. simulation, validation, overfitting, etc.)
+
+Note: I will not ask questions in this assignment about Bayesian calculations and modeling (a large chunk of Chapters 8 and 10) as this is the subject of Math 341. It is obviously important in Data Science (that's why Math 341 is a required course in the data science and statistics major). % and also we now have $f_{pr}, h^*_{pr}, g_{pr}, p_{th}$, etc from probabilistic classification as well as different types of validation schemes)
+
+\begin{enumerate}
+
+\easysubproblem{Why are flu fatalities hard to predict? Which type of error is most dominant in the models?
+\ans Flu fatalities are hard to predict because there is not enough data flu pandemics. Each strain of the flu has its own fatality ratio, so when extrapolated, flu fatality cannot be predicted accurately. The majority of the error comes from the \emph{estimation error}. % pg 187-188
+}
+
+\easysubproblem{In what context does Silver define extrapolation and what term did he use? Why does his terminology conflict with our terminology?
+\ans Silver defines extrapolation as \qu{the assumption that the current trend will continue indefinitely, into the future} in the context of exponential growth. In our terms, extrapolation is predicting on data that is outside the range of the training set $\mathbb{D}$. While both definitions assume that the trend can change in the future, our definition does not necessarily imply that the model will fail under extrapolation.  % pg 173-174
+} 
+
+\easysubproblem{Give a couple examples of extraordinary prediction failures (by very famous people who were considered heavy-hitting experts of their time) that were due to reckless extrapolations.
+\ans \begin{itemize}
+    \item In 1894, a writer for the Times of London predicted that by the 1940s, every street in London would be buried under nine feet of the manure.
+    \item In 1682, English economist, Sir William Petty predicted that the human population growth rate would be slow. 
+    \item In 1968, Paul and Anne Ehrlich predicted that hundreds of millions of people would die from starvation in the 1970's. 
+\end{itemize} % pg 174 
+}
+
+
+\easysubproblem{Using the notation from class, define \qu{self-fulfilling prophecy} and \qu{self-canceling prediction}.
+\ans A \emph{self-fulfilling prophecy} occurs when a prediction ($\hat{y}$) causes an event ($y_{future}$) to take place while a \emph{self-canceling prediction} tends to
+undermine itself. % pg 177-180
+}
+
+
+\easysubproblem{Is the SIR model of infectious disease under or overfit? Why?
+\ans SIR models underfit because they assume that everyone in a population behaves the same way. They do not account for differences in susceptibility, vaccinations, demographics, or social interactions. % pg 181
+}
+
+\easysubproblem{What did the famous mathematician Norbert Wiener mean by \qu{the best model of a cat is a cat}?
+\ans Wiener meant that because models are merely approximations of $t(z_1,\ldots,z_t)$, there will always be some error in explaining/predicting $y$. The only way to get an exact estimate is to see the phenomenon itself. % pg 188
+}
+
+\easysubproblem{Not in the book but about Norbert Weiner. From Wikipedia: 
+
+\begin{quote}
+Norbert Wiener is credited as being one of the first to theorize that all intelligent behavior was the result of feedback mechanisms, that could possibly be simulated by machines and was an important early step towards the development of modern artificial intelligence.
+\end{quote}
+
+What do we mean by \qu{feedback mechanisms} in the context of this class?
+\ans \emph{Feedback mechanisms} are the true causal inputs, $z_1, \ldots, z_t$.
+}
+
+
+\easysubproblem{I'm not going to both asking about the bet that gave Bob Voulgaris his start. But what gives Voulgaris an edge (p239)? Frame it in terms of the concepts in this class.
+\ans Voulgaris' advantage is that he combines his  knowledge of statistics with his knowledge of basketball to identify meaningful relationships in the data, i.e. he uses \emph{a priori} information.
+}
+
+
+
+\easysubproblem{Why do you think a lot of science is not reproducible?
+\ans Much of science is not reproducible because the hypothesis sets are too large, so laboratory conditions do not accurately mimic real phenomena and in turn may produce random predictions.
+}
+
+\easysubproblem{Why do you think Fisher did not believe that smoking causes lung cancer?
+\ans Fisher believed that smoking is correlated with lung cancer, but that the relationship is not causal because there was no prior information suggesting it at the time. % pg 208
+}\spc{1}
+
+\easysubproblem{Is the world moving more in the direction of Fisher's Frequentism or Bayesianism?
+\ans The world is moving more toward Bayesianism. % pg 212
+}
+
+\easysubproblem{How did Kasparov defeat Deep Blue? Can you put this into the context of over and underfiting?
+\ans Kasparov defeated Deep Blue by playing moves that were statistically unlikely. The computer's algorithm was overfit, being too precise in predicting the most likely move for Kasparov. So, when Kasparov moved to a position that only occurred one time in a master-level chess competition, the computer lost. % pg 219-220
+}
+
+\easysubproblem{Why was Fischer able to make such bold and daring moves?
+\ans Fischer was able to make such moved because he thought out of the scope of traditional chess heuristics. % pg 236
+}
+
+\easysubproblem{What metric $y$ is Google predicting when it returns search results to you? Why did they choose this metric?
+\ans Google is trying to measure the \qu{usefulness} of web-pages so that the searcher can find the optimal results with a simple query. % pg 237
+}
+
+\easysubproblem{What do we call Google's \qu{theories} in this class? And what do we call \qu{testing} of those theories?
+\ans Google's theories are models and they are tested with validation. % pg 238
+}
+
+\easysubproblem{p315 give some very practical advice for an aspiring data scientist. There are a lot of push-button tools that exist that automatically fit models. What is your edge from taking this class that you have over people who are well-versed in those tools?
+\ans We are starting without any bad habits. % pg 257
+}
+
+\easysubproblem{Create your own 2$\times$2 luck-skill matrix (Fig. 10-10) with your own examples (not the ones used in the book).
+\ans
+\begin{center}
+    \begin{tabular}{c|c|c}
+         & \textbf{Low Luck} & \textbf{High Luck} \\
+         \hline
+         \textbf{Low Skill} & inherit money & win the lottery \\
+         \hline
+         \textbf{High Skill} & get a job & play the stock market
+    \end{tabular}
+\end{center} % pg 263
+}
+
+\easysubproblem{[EC] Why do you think Billing's algorithms (and other algorithms like his) are not very good at no-limit hold em? I can think of a couple reasons why this would be.}
+
+\easysubproblem{Do you agree with Silver's description of what makes people successful (pp326-327)? Explain.
+\ans Silver defines success as a combination of hard work, natural talent, and a person’s opportunities and environment. I agree with his definition because success is often attributed to opportunities but is difficult to sustain without hard work or natural talent. % pg 267
+}
+
+\easysubproblem{Silver brings up an interesting idea on p328. Should we remove humans from the predictive enterprise completely after a good model has been built? Explain.
+\ans If you remove humans from the predictive enterprise, the model would only be able to predict well under perfect circumstances, i.e. it would overfit. % pg 269
+}
+
+\easysubproblem{According to Fama, using the notation from this class, how would explain a mutual fund that performs spectacularly in a single year but fails to perform that well in subsequent years?
+\ans Fama's claim could not predict well over 5 years because he did not take into account other factors like the type of product a company sells or if the company made a profit or a loss. His model therefore had large estimation error. % pg 279
+}
+
+\easysubproblem{Did the Manic Momentum model validate? Explain.
+\ans The Manic Momentum model was not validated and would therefore have the adverse effect if it was used in the early 2000's. % pg 281-282
+}
+
+\easysubproblem{Are stock market bubbles noticeable while we're in them? Explain.
+\ans Stock market bubbles are hard to notice while we're in them because there they're not predictable in the short-term. Nevertheless, there are economic indicators pointing toward them. % pg 285-286
+}\spc{1}
+
+\easysubproblem{What is the implication of Shiller's model for a long-term investor in stocks?
+\ans While stocks are unpredictable in the short-term, dramatic changes can often be predicted in the long-term. % pg 286
+}
+
+\easysubproblem{In lecture one, we spoke about \qu{heuristics} which are simple models with high error but extremely easy to learn and live by. What is the heuristic Silver quotes on p358 and why does it work so well?
+\ans Silver quotes the heuristic, \qu{Follow the crowd, especially when you
+don’t know any better.} This works well because in many situations, following the crowd leads to the most probable outcome. % pg 295
+}
+
+\easysubproblem{Even if your model at predicting bubbles turned out to be good, what would prevent you from executing on it?
+\ans Real-world constraints on trading and capital can prevent executing on a good prediction. % pg 298
+}
+
+\easysubproblem{How can heuristics get us into trouble?
+\ans Heuristics can get us into trouble when they don't align with circumstance.
+}
+
+\end{enumerate}
+
+\section{Validation}
+
+\begin{enumerate}
+
+\easysubproblem{Assume you are doing one train-test split where you build the model on the training set and validate on the test set. What does the constant $K$ control? And what is its tradeoff?
+\ans $K$ controls the proportion of test observations used for validation. It is the tradeoff between bias and variance.
+}
+
+\intermediatesubproblem{Assume you are doing one train-test split where you build the model on the training set and validate on the test set. If $n$ was very large so that there would be trivial misspecification error even when using $K=2$, would there be any benefit at all to increasing $K$ if your objective was to estimate generalization error? Explain.
+\ans Following the \emph{Central Limit Theorem}, the variance will be approximately the same with any $K$ when $n$ is large. So, there would be no benefit in increasing $K$.
+}
+
+\easysubproblem{What problem does $K$-fold CV try to solve?
+\ans $K$-fold CV tries to find the best train-test split for validation.
+}
+
+\extracreditsubproblem{Theoretically, how does $K$-fold CV solve it?}\spc{5}
+
+
+\end{enumerate}
+
+\section{Polynomial-Derived and Logarithm-Derived Features}
+
+\begin{enumerate}
+
+\intermediatesubproblem{What was the overarching problem we were trying to solve when we started to introduce polynomial terms into $\mathcal{H}$? What was the mathematical theory that justified this solution? Did this turn out to be a good solution? Why / why not?
+\ans If the data is non-linear, $\mathcal{H} = linear\ models$ will not be able to fit a good model. The \emph{Weierstrauss Approximation Theorem} states that for any continuous function $f$, there exists a polynomial function $p$ that is close to $f$. Using the \emph{Weierstrauss Approximation Theorem}, you can use a polynomial function that approximates a linear function to fit a model using \emph{OLS}. By \emph{Vandermonde's Matrix Theorem}, $\X$ will still be full-rank.
+}
+
+\intermediatesubproblem{We fit the following model: $\yhat = b_0 + b_1 x + b_2 x^2$. What is the interpretation of $b_1$? What is the interpretation of $b_2$? Although we didn't yet discuss the \qu{true} interpretation of OLS coefficients, do your best with this.
+\ans $b_1$ is the constant change in response to a unit of $x$ while $b_2$ will change by $x$ in response to a unit of $x$.
+}
+
+\hardsubproblem{Assuming the model from the previous question, if $x \in \mathcal{X} = \bracks{10.0, 10.1}$, do you expect to \qu{trust} the estimates $b_1$ and $b_2$? Why or why not?
+\ans No, because the model will fail under extrapolation.
+}
+
+\hardsubproblem{We fit the following model: $\yhat = b_0 + b_1 x_1 + b_2 \natlog{x_2}$. We spoke about in class that $b_2$ represents loosely the predicted change in response for a proportional movement in $x_2$. So e.g. if $x_2$ increases by 10\%, the response is predicted to increase by $0.1 b_2$. Prove this approximation from first principles.
+\ans \begin{align*}
+    \natlog{x + 1} &= x - \frac{x^2}{2} + \frac{x^3}{3} - \ldots + \ldots \\
+    &\approx x \hspace{.5 cm} \text{ if } x \text{ is small }
+\end{align*}
+Let $\Delta \natlog{x_2} = \natlog{x_2 + 0.1x_2} - \natlog{x_2}$,
+\begin{align*}
+    b_2 \Delta \natlog{x_2} &= b_2\big(\natlog{x_2 + 0.1x_2} - \natlog{x_2}\big) \\
+    &= b_2 \natlog{\frac{x_2 + 0.1x_2}{x_2}} \\
+    &= b_2(1.1) \\
+    &\approx (1.1 - 1)b_2 = 0.1b_2
+\end{align*}
+}
+
+\easysubproblem{When does the approximation from the previous question work? When do you expect the approximation from the previous question not to work?
+\ans This approximation works when $\frac{x_2'}{x_2} \approx 1$. When there is a large difference between $x_2'$ and $x_2$, the approximation will likely fail. 
+}
+
+\intermediatesubproblem{We fit the following model: $\natlog{\yhat} = b_0 + b_1 x_1 + b_2 \natlog{x_2}$. What is the interpretation of $b_1$? What is the interpretation of $b_2$? Although we didn't yet discuss the \qu{true} interpretation of OLS coefficients, do your best with this.
+\ans $b_1$ is the predicted change in $\natlog{\yhat}$ for each unit of $x_2$ when $x_2$ is held constant. $b_2$ is the predicted change in response for a proportional movement in $x_2$ when $x_1$ is held constant.
+}
+
+\easysubproblem{Show that the model from the previous question is equal to $\yhat = m_0 m_1^{x_1} x_2^{b_2}$ and interpret $m_1$.
+\ans
+\begin{align*}
+    \natlog{\yhat} &= b_0 + b_1 x_1 + b_2 \natlog{x_2} \\
+    &= e^{b_0 + b_1 x_1 + b_2 \natlog{x_2}} \\
+    &= e^{b_0} e^{b_1x_1} e^{b_2 \natlog{x_2}} \\
+    &= m_0 m_1^{x_1} x_2^{b_2}
+\end{align*}
+$m_1$ is the predicted change of $e^{b_1}$ in $\yhat$ for each unit of $x_1$ when $x_2$ is held constant. 
+}
+
+\end{enumerate}
+
+
+
+\section{Model Selection}
+
+\begin{enumerate}
+
+\easysubproblem{Define the fundamental problem of \qu{model selection}.
+\ans There are many models to choose from, so how do we know that we're choosing the right one?
+}
+
+\easysubproblem{Describe the first procedure we introduced to solve it.
+\ans Fit $m$ models and perform honest validation on $g_1, \ldots, g_m$. Then select $g_{m_*}$ with the lowest $S_e$.
+}
+
+\easysubproblem{Discuss possible problems with this procedure.
+\ans \begin{itemize}
+    \item How do you know you're picking the right model and how well does $g_{m_*}$ perform?
+    \item The validation is not honest since $\mathbb{D}_{test}$ is used many times.
+\end{itemize}
+}
+
+\easysubproblem{Describe how you would use this model selection procedure to find hyperparameter values in algorithms that require hyperparameters.
+\ans You can create a model $g$ and fit it $m$ times using $m$ possible values for hyperparameters. Then perform honest validation and select the model $g_{m_*}$ with the lowest $S_e$.
+}
+
+\easysubproblem{Does using both inner and outer folds in a double cross-validation procedure solve some of these problems?
+\ans Yes.
+}
+\end{enumerate}
+
+\end{document}
+
+
