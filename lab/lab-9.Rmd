@@ -1,0 +1,433 @@
+---
+title: "Lab 9"
+author: "Tziporah Horowitz"
+output: pdf_document
+date: "11:59PM May 2, 2020"
+---
+
+Set a seed and load the `adult` dataset and remove missingness. We also drop the education variable as it's linearly dependent with the education_num variable and will complicate the interactions further on.
+
+```{r}
+set.seed(1)
+pacman::p_load_gh("coatless/ucidata")
+data(adult)
+adult = na.omit(adult)
+adult$education = NULL
+```
+
+We had problems with the features "occupation" and "native_country". Go through these two features and and identify levels with too few examples and wrap them into a level called "other". This is standard practice.
+
+```{r}
+sort(table(adult$occupation))
+adult$occupation = as.character(adult$occupation)
+adult$other = adult$occupation %in% c("Armed-Forces", "Priv-house-serv", "Protective-serv")
+table(adult$other)
+adult$occupation[adult$other] = "other"
+adult$other = NULL
+adult$occupation = as.factor(adult$occupation)
+sort(table(adult$occupation))
+
+sort(table(adult$native_country))
+adult$domestic = ifelse(adult$native_country == "United-States", 1, 0)
+table(adult$domestic)
+adult$native_country = NULL
+```
+
+
+We will be doing model selection. We will split the dataset into 3 distinct subsets. Set the size of our splits here. For simplicitiy, all three splits will be identically sized. We are making it small so the stepwise algorithm can compute quickly. If you have a faster machine, feel free to increase this.
+
+```{r}
+Nsplitsize = 1000
+```
+
+
+Now create the following variables: `Xtrain`, `ytrain`, `Xselect`, `yselect`, `Xtest`, `ytest` with `Nsplitsize` observations:
+
+```{r}
+adult = adult[sample(1 : nrow(adult)), ]
+
+Xtrain = adult[1 : Nsplitsize, ]
+Xtrain$income = NULL
+ytrain = ifelse(adult[1 : Nsplitsize, "income"] == ">50K", 1, 0)
+Xselect = adult[(Nsplitsize + 1) : (2 * Nsplitsize), ]
+Xselect$income = NULL
+yselect = ifelse(adult[(Nsplitsize + 1) : (2 * Nsplitsize), "income"] ==">50K", 1, 0)
+Xtest = adult[(2 * Nsplitsize + 1) : (3 * Nsplitsize), ]
+Xtest$income = NULL
+ytest = ifelse(adult[(2 * Nsplitsize + 1) : (3 * Nsplitsize), "income"] == ">50K", 1, 0)
+```
+
+Fit a vanilla logistic regression on the training set.
+
+```{r}
+logistic_mod = glm(ytrain ~ ., Xtrain, family = "binomial")
+```
+
+and report the log scoring rule, the Brier scoring rule.
+
+```{r}
+phat_train = predict(logistic_mod, Xtrain, type = 'response')
+mean(ytrain * log(phat_train) + (1 - ytrain) * log(1 - phat_train)) #log score computation
+mean(-(ytrain - phat_train)^2) #brier score computations
+```
+
+
+Then use this probability estimation model to do classification by thresholding at 0.5. Tabulate a confusion matrix and compute the misclassification error.
+
+```{r}
+y_hat_train = ifelse(phat_train >= 0.5, 1, 0)
+table(ytrain, y_hat_train)
+mean(ytrain != y_hat_train)
+```
+
+We will be doing model selection using a basis of linear features consisting of all interactions of the 14 raw features. Create a model matrix from the training data containing all these features. Make sure it has an intercept column too (the one vector is usually an important feature). Cast it as a data frame so we can use it more easily for modeling later on.
+
+```{r}
+Xmm_train = data.frame(model.matrix(~ . * ., Xtrain))
+dim(Xmm_train)
+```
+
+We're going to need those model matrices (as data frames) for both the select and test sets. So make them here:
+
+```{r}
+Xmm_select = data.frame(model.matrix(~ . * . , Xselect))
+dim(Xmm_select)
+Xmm_test = data.frame(model.matrix(~ . * . , Xtest))
+dim(Xmm_test)
+```
+
+Write code that will fit a model stepwise. You can refer to the chunk of line 83 in practice lecture 12. Use the Brier score to do the selection. Run the code and hit "stop" when you begin to the see the Brier score degrade appreciably oos. Be patient as it will wobble.
+
+```{r}
+pacman::p_load(Matrix)
+p_plus_one = ncol(Xmm_train)
+predictor_by_iteration = c() #keep a growing list of predictors by iteration
+in_sample_brier_by_iteration = c() #keep a growing list of se's by iteration
+oos_brier_by_iteration = c() #keep a growing list of se's by iteration
+i = 1
+
+repeat {
+
+  #get all predictors left to try
+  all_brier = array(NA, p_plus_one) #record all possibilities
+  for (j_try in 1 : p_plus_one){
+    if (!(j_try %in% predictor_by_iteration)){
+      Xmm_sub = Xmm_train[, c(predictor_by_iteration, j_try), drop = FALSE]
+      #we need a check here to ensure the matrix is full rank
+      if (ncol(Xmm_sub) > rankMatrix(Xmm_sub)){
+        next
+      }
+      #use suppressWarnings to get this to run without blasting the console
+      logistic_mod = suppressWarnings(glm(ytrain ~ ., data.frame(Xmm_sub), family = "binomial"))
+      phatTrain = suppressWarnings(predict(logistic_mod, data.frame(Xmm_sub), type = 'response'))
+      all_brier[j_try] = mean(-(ytrain - phatTrain)^2) 
+    }
+  }
+  j_star = which.max(all_brier) #We didn't catch this in lab... it has to be max Brier.
+  predictor_by_iteration = c(predictor_by_iteration, j_star)
+  in_sample_brier_by_iteration = c(in_sample_brier_by_iteration, all_brier[j_star])
+  
+  #now let's look at oos
+  Xmm_sub = Xmm_train[, predictor_by_iteration, drop = FALSE]
+  logistic_mod = suppressWarnings(glm(ytrain ~ ., data.frame(Xmm_sub), family = "binomial"))
+  phatTrain = suppressWarnings(predict(logistic_mod, data.frame(Xmm_sub), type = 'response'))
+  all_brier[j_try] = mean(-(ytrain - phatTrain)^2)
+  
+  phat_select = suppressWarnings(predict(logistic_mod, data.frame(Xmm_select[, predictor_by_iteration, drop = FALSE]), type = 'response'))
+
+  oos_brier = mean(-(yselect - phat_select)^2) 
+  oos_brier_by_iteration = c(oos_brier_by_iteration, oos_brier)
+  
+  cat("i =", i, "in sample brier = ", all_brier[j_star], "oos brier =", oos_brier, "\n   predictor added:", colnames(Xmm_train)[j_star], "\n")
+  
+  i = i + 1
+  
+  if (i > 5000 || i > p_plus_one){
+    break #why??
+  }
+}
+```
+
+Plot the in-sample and oos (select set) Brier score by $p$. Does this look like what's expected?
+
+```{r}
+pacman::p_load(ggplot2)
+
+simulation_results = data.frame(
+  iteration = 1:length(in_sample_brier_by_iteration),
+  in_sample_brier_by_iteration = in_sample_brier_by_iteration,
+  oos_brier_by_iteration = oos_brier_by_iteration
+)
+
+ggplot(data = simulation_results) + 
+  geom_line(aes(x = iteration, y = oos_brier_by_iteration, color = "oos")) + 
+  geom_line(aes(x = iteration, y = in_sample_brier_by_iteration, color = "in sample")) +
+  xlab("Iteration") +
+  ylab("Brier Score") 
+```
+
+Print out the coefficients of the model selection procedure's guess as to the locally optimal probability estimation model and interpret the five largest (in abolute value) coefficients. Do the signs make sense on these coefficients?
+
+```{r warning=FALSE}
+p_optimal = which.max(oos_brier_by_iteration)
+
+optimal_model = glm(ytrain ~ ., Xmm_train[predictor_by_iteration[1:p_optimal]], family = "binomial") 
+
+five_largest = sort(abs(optimal_model$coefficients), decreasing = TRUE)[1:5]
+
+five_largest_coef = c()
+for (i in 1:(p_optimal + 1)) {
+  for (j in 1:5){
+    if (abs(optimal_model$coefficients[i]) == five_largest[j]){
+      five_largest_coef = c(five_largest_coef, optimal_model$coefficients[i])
+    }
+  }
+}
+five_largest_coef
+
+```
+
+Use this locally optimal probability estimation model to make predictions in all three data sets: train, select test. Compare to the Brier scores across all three sets. Is this expected?
+
+```{r}
+phatTrain = predict(optimal_model, Xmm_train[predictor_by_iteration[1:p_optimal]], type = 'response')
+mean(-(ytrain - phatTrain)^2) 
+
+phatSelect = predict(optimal_model, Xmm_select[predictor_by_iteration[1:p_optimal]], type = 'response')
+mean(-(yselect - phatSelect)^2) 
+
+phatTest = predict(optimal_model, Xmm_test[predictor_by_iteration[1:p_optimal]], type = 'response')
+mean(-(ytest - phatTest)^2) 
+```
+
+Plot the probability predictions in the test set by `y`. Does this plot look good?
+
+```{r}
+ggplot() +
+  geom_boxplot(aes(x = factor(ytest), y = phatTest)) 
+```
+
+Calculate misclassification error, sensitivity (recall), specificity (true negative rate, TN / N), FDR, FOR for this model if you threshold at phat = 0.5. Interpret these metrics.
+
+```{r}
+classifi = rep(NA, length(ytrain))
+TN = rep(NA, length(ytrain))
+FN = rep(NA, length(ytrain))
+TP = rep(NA, length(ytrain))
+FP = rep(NA, length(ytrain))
+
+for (i in 1:length(ytrain)) {
+  classifi[i] = ifelse(phatTrain[i] >= 0.5, 1, 0)
+  
+  TN[i] = ifelse(classifi[i] == 0 & ytrain[i] == 0, 1, 0)
+  FN[i] = ifelse(classifi[i] == 0 & ytrain[i] == 1, 1, 0)
+  TP[i] = ifelse(classifi[i] == 1 & ytrain[i] == 1, 1, 0)
+  FP[i] = ifelse(classifi[i] == 1 & ytrain[i] == 0, 1, 0)
+}
+
+PN = sum(TN) + sum(FN)
+PP = sum(FP) + sum(TP)
+N = sum(TN) + sum(FP)
+P = sum(FN) + sum(TP)
+n = PN + PP
+
+err = (sum(FP) + sum(FN)) / n
+sensitivity = sum(TP) / P
+specificity = sum(TN) / N
+FDR = sum(FP) / sum(PP)
+FOR = sum(FN) / sum(PN)
+
+err             # false prediction 13.5% of the time
+sensitivity     # 61.8% of positives are predicted positive
+specificity     # 94.2% of negatives are predicted negative
+FDR             # 23% of predicted positives are false
+FOR             # 11.2% of predicted negatives are false
+```
+
+Now, consider an asymmetric costs scenario. Let's say you're trying to sell people luxury products and want to advertise with only high-salaried individuals. Since your advertising is expensive, you want to not waste money on people who do not make a high salary. Thus your cost of predicting >50K when it truly is <=50K, i.e. a false positive (FP), is higher than predicting <=50K when the person truly makes >50K, i.e. a false negative (FN). Set the cost of FP to 3x more than the cost of FN. Use a grid of 0.001 to step through thresholds for the locally optimal probability estimation model (source the function from practice lecture 15). Do this in the selection dataset.
+
+```{r}
+#' Computes performance metrics for a binary probabilistic classifer
+#'
+#' Each row of the result will represent one of the many models and its elements record the performance of that model so we can (1) pick a "best" model at the end and (2) overall understand the performance of the probability estimates a la the Brier scores, etc.
+#'
+#' @param p_hats  The probability estimates for n predictions
+#' @param y_true  The true observed responses
+#' @param res     The resolution to use for the grid of threshold values (defaults to 1e-3)
+#'
+#' @return        The matrix of all performance results
+compute_metrics_prob_classifier = function(p_hats, y_true, res = 0.001){
+  #we first make the grid of all prob thresholds
+  p_thresholds = seq(0 + res, 1 - res, by = res) #values of 0 or 1 are trivial
+  
+  #now we create a matrix which will house all of our results
+  performance_metrics = matrix(NA, nrow = length(p_thresholds), ncol = 12)
+  colnames(performance_metrics) = c(
+    "p_th",
+    "TN",
+    "FP",
+    "FN",
+    "TP",
+    "miscl_err",
+    "precision",
+    "recall",
+    "FDR",
+    "FPR",
+    "FOR",
+    "miss_rate"
+  )
+  
+  #now we iterate through each p_th and calculate all metrics about the classifier and save
+  n = length(y_true)
+  for (i in 1 : length(p_thresholds)){
+    p_th = p_thresholds[i]
+    # yhats
+    classifi[i] = ifelse(p_hats[i] >= p_th, 1, 0)
+  
+    TN[i] = ifelse(classifi[i] == 0 & y_true[i] == 0, 1, 0)
+    FN[i] = ifelse(classifi[i] == 0 & y_true[i] == 1, 1, 0)
+    TP[i] = ifelse(classifi[i] == 1 & y_true[i] == 1, 1, 0)
+    FP[i] = ifelse(classifi[i] == 1 & y_true[i] == 0, 1, 0)
+    
+    PN = sum(TN) + sum(FN)
+    PP = sum(FP) + sum(TP)
+    N = sum(TN) + sum(FP)
+    P = sum(FN) + sum(TP)
+    n = PN + PP
+    
+    t = c(
+      p_th,
+      sum(TN), #TN
+      sum(FP), #FP
+      sum(FN), #FN
+      sum(TP), #TP
+      (sum(FP) + sum(FN)) / n,
+      sum(TP) / PP, #precision
+      sum(TP) / P,  #recall
+      sum(FP) / sum(PP), #false discovery rate (FDR)
+      sum(FP) / N,  #false positive rate (FPR)
+      sum(FN) / sum(PN), #false omission rate (FOR)
+      sum(FN) / P   #miss rate
+    )
+    
+    for (j in 1:12) {
+      performance_metrics[i, j] = t[j]
+    }
+    
+  }
+  
+  #finally return the data frame
+  data.frame(performance_metrics)
+}
+
+
+performance = compute_metrics_prob_classifier(phatSelect, yselect)
+head(performance)
+
+c_FP = -1
+c_FN = 3 * c_FP
+```
+
+Plot an ROC curve for the selection dataset.
+
+```{r}
+ggplot(data = performance) +
+  geom_line(aes(x = FPR, y = recall)) + 
+  xlim(0, 1) + 
+  ylim(0, 1) 
+```
+
+Calculate AUC and interpret.
+
+```{r}
+pacman::p_load(pracma)
+trapz(performance$FPR, performance$recall)
+```
+
+Plot a DET curve for the selection dataset.
+
+```{r}
+ggplot(data = performance) +
+  geom_line(aes(x = FDR, y = FOR)) + 
+  xlim(0, 1) + 
+  ylim(0, 1) 
+```
+
+Calculate total cost for each classification model defined by each threshold.
+
+```{r}
+performance$cost = (performance$FP * c_FP) + (performance$FN * c_FN)
+```
+
+Find the probability estimate threshold for the locally optimal asymmetric cost model for your FP and FN costs. Use this optimal probability estimate threshold and classify the test set. Print out its confusion matrix in the test set and calculate average cost per future observation, future FDR and future FOR and interpret these metrics in the context of this scenario. Is this model successful in internalizing your asymmetric costs?
+
+```{r}
+opt_threshold = performance$p_th[which.max(performance$cost)]
+
+for (i in 1:length(ytest)) {
+  classifi[i] = ifelse(phatTest[i] >= opt_threshold, 1, 0)
+}
+
+pacman::p_load(e1071)
+c_matrix = t(matrix(caret::confusionMatrix(table(phat = classifi, ytest))$table, nrow = 2, ncol = 2))
+c_matrix = rbind(c_matrix, c(sum(c_matrix[, 1]), sum(c_matrix[, 2])))
+c_matrix = cbind(c_matrix, c(sum(c_matrix[1, ]), sum(c_matrix[2, ]), length(ytest)))
+rownames(c_matrix) = c("y=0", "y=1", "Total")
+colnames(c_matrix) = c("yhat=0", "yhat=1", "Total")
+c_matrix
+
+avg_cost = ((c_matrix[1, 2] * c_FP) + (c_matrix[2, 1] * c_FN)) / length(ytest)
+avg_cost
+
+future_FDR = c_matrix[1, 2] / c_matrix[3, 2]
+future_FDR      # 40.5% of predicted positives are false
+future_FOR = c_matrix[2, 1] / c_matrix[3, 1]
+future_FOR      # 8.1% of predicted negatives are false
+```
+
+Throughout the next part of this assignment you can use either the `tidyverse` package suite or `data.table` to answer but not base R. You can mix `data.table` with `magrittr` piping if you wish but don't go back and forth between `tbl_df`'s and `data.table` objects.
+
+```{r}
+rm(list = ls())
+pacman::p_load(tidyverse, magrittr, data.table)
+```
+
+We will be using the `storms` dataset from the `dplyr` package. Filter this dataset on all storms that have no missing measurements for the two diameter variables, "ts_diameter" and "hu_diameter".
+
+```{r}
+data(storms)
+storms
+storms %<>%
+  filter(!is.na(ts_diameter) & !is.array(hu_diameter)) %>% 
+  group_by(name) %>% 
+  mutate(obs_period = row_number())
+```
+
+From this subset, create a data frame that only has storm, observation period number (i.e., 1, 2, ..., T) and the "ts_diameter" and "hu_diameter" metrics.
+
+```{r}
+storms %<>% 
+  select(name, obs_period, ts_diameter, hu_diameter)
+```
+
+Create a data frame in long format with columns "diameter" for the measurement and "diameter_type" which will be categorical taking on the values "hu" or "ts".
+
+```{r}
+storms_long = storms %>% 
+  gather(diameter_type, diameter, ts_diameter:hu_diameter) %>% 
+  mutate(diameter_type = ifelse(diameter_type == "ts_diameter", "ts", "hu"))
+```
+
+Using this long-formatted data frame, use a line plot to illustrate both "ts_diameter" and "hu_diameter" metrics by observation period for four random storms using a 2x2 faceting. The two diameters should appear in two different colors and there should be an appropriate legend.
+
+```{r}
+random_storms = sample(storms$name, 4)
+
+storms_long %>% 
+  filter(name %in% random_storms) %>% 
+  ggplot() +
+  geom_line(aes(x = obs_period, y = diameter, color = diameter_type)) +
+  facet_wrap(vars(name)) +
+  xlab("Observation Period") +
+  ylab("Diameter")
+```
