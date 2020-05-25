@@ -1,0 +1,217 @@
+---
+title: "Queens Housing Data"
+output: word_document
+---
+
+
+### Data Wrangling
+
+```{r data wrangling, echo=T, results='hide', message=FALSE, warning=FALSE}
+pacman::p_load(skimr, dplyr, magrittr, lubridate, stringr, ggplot2)
+
+# import data
+housing = readr::read_csv("C:\\Users\\Tziporah\\Documents\\Major\\Math\\MATH_390\\housing_data_2016_2017.csv")
+zip_data = readr::read_delim("C:\\Users\\Tziporah\\Documents\\Major\\Math\\MATH_390\\us-zip-code-latitude-and-longitude.csv", delim = ";")
+
+# omit any column with just 1 value
+cols_to_omit = c()
+for (i in 1:ncol(housing)){
+  if (n_unique(housing[, i]) == 1){
+    cols_to_omit = c(cols_to_omit, i)
+  }
+}
+
+housing %<>% 
+  # clean the data
+  mutate(cats_allowed = ifelse(cats_allowed == "y" | cats_allowed == "yes", 1, 0),
+         coop_condo = ifelse(coop_condo == "condo", 0, 1),
+         dogs_allowed = ifelse(dogs_allowed == "yes89" | cats_allowed == "yes", 1, 0),
+         garage_listed = ifelse(!is.na(garage_exists), 1, 0),
+         kitchen_type = factor(ifelse(kitchen_type == "eat in" | kitchen_type == "Eat In" | 
+                                 kitchen_type == "Eat in" | kitchen_type == "eatin", "eat in",
+                        ifelse(kitchen_type == "Combo" | kitchen_type == "combo", "combo",
+                        ifelse(kitchen_type == "efficiency" | kitchen_type == "efficiency kitchene" |
+                                 kitchen_type == "efficiency kitchen" | kitchen_type == "efficiemcy" |
+                                 kitchen_type == "efficiency ktchen", "efficiency", kitchen_type)))),
+         fuel_type = ifelse(fuel_type == "Other" | fuel_type == "none", "other", fuel_type),
+         maintenance_cost = as.numeric(str_remove_all(str_remove_all(maintenance_cost, "[$]"), "[,]")),
+         parking_charges = as.numeric(str_remove_all(str_remove_all(parking_charges, "[$]"), "[,]")),
+         sale_price = as.numeric(str_remove_all(str_remove_all(sale_price, "[$]"), "[,]")),
+         total_taxes = as.numeric(str_remove_all(str_remove_all(total_taxes, "[$]"), "[,]")),
+         listing_price_to_nearest_1000 = as.numeric(str_remove_all(
+           str_remove_all(listing_price_to_nearest_1000, "[$]"), "[,]")),
+         common_charges = as.numeric(str_remove_all(str_remove_all(common_charges, "[$]"), "[,]")),
+         date_of_sale = mdy(date_of_sale),
+         month_of_sale = month(date_of_sale),
+         zip_code = str_remove(str_sub(URL, start = -15, end = -10), pattern = "-"),
+         street_address = str_sub(full_address_or_zip_code, start = 1,
+                                  end = str_locate(full_address_or_zip_code, pattern = ",")[,1] - 1),
+         season = factor(ifelse(month_of_sale == 12 | month_of_sale == 1 | month_of_sale == 2, "winter", 
+                  ifelse(month_of_sale == 3 | month_of_sale == 4 | month_of_sale == 5, "spring", 
+                  ifelse(month_of_sale == 6 | month_of_sale == 7 | month_of_sale == 8, "summer", 
+                  ifelse(month_of_sale == 9 | month_of_sale == 10 | month_of_sale == 11, "fall", NA)))))
+         
+         ) %>% 
+  # these NA's are insignificant when sale_price is present
+  filter(!is.na(approx_year_built), !is.na(kitchen_type), !is.na(community_district_num)) %>%
+  select(-all_of(cols_to_omit), -CreationTime, -Expiration, -url, -Description, -RequesterAnnotation,
+         -num_half_bathrooms, -garage_exists, -HITId, -HITTypeId, -AssignmentId, -WorkerId, -AcceptTime,
+         -SubmitTime, -AutoApprovalTime, -ApprovalTime, -LifetimeApprovalRate, -Last7DaysApprovalRate, 
+         -Last30DaysApprovalRate, -Keywords, -NumberOfSimilarHITs, -LifetimeInSeconds, -RejectionTime,
+         -RequesterFeedback, -URL, -full_address_or_zip_code, -model_type, -date_of_sale,
+         -listing_price_to_nearest_1000, -month_of_sale) %>% 
+  mutate(kitchen_type = factor(kitchen_type),
+         fuel_type = factor(fuel_type),
+         dining_room_type = factor(dining_room_type)) 
+
+
+# merge data with geographic data
+housing = merge(housing, zip_data, by.x = "zip_code", by.y = "Zip", all.x = TRUE)
+colnames(housing)
+housing = housing[, -c(1, 24, 26, 27, 30:32)] %<>%
+  arrange(sale_price)
+housing
+
+# deal with common_charges/maintenence_cost
+housing %<>%
+  mutate(total_taxes = ifelse(coop_condo == 1 & is.na(total_taxes), 0, total_taxes),
+         maintenance_cost = ifelse(is.na(maintenance_cost), 0, maintenance_cost),
+         common_charges = ifelse(is.na(common_charges), 0, common_charges),
+         total_maintenance = common_charges + total_taxes + maintenance_cost) %>%
+  select(-total_taxes, -maintenance_cost, -common_charges) %>% 
+  filter(!is.na(total_maintenance))
+
+
+# remove NA y values
+housing_sub = housing %<>%
+  filter(!is.na(sale_price))
+skim(housing_sub)
+
+```
+
+```{r missing data, echo=T, results='hide'}
+# make dummies for missing values
+colnames(housing_sub)
+y = housing_sub[, 16]
+X = housing_sub[, -16]
+M = tbl_df(apply(is.na(X), 2, as.numeric))
+colnames(M) = paste("is_missing_", colnames(X), sep = "")
+M = tbl_df(t(unique(t(M))))
+M %<>% select_if(function(x){sum(x) > 0})
+M
+
+
+# impute on NA's
+pacman::p_load(missForest)
+
+colnames(X); skim(X)
+vars_to_impute = c(11,6,16,14,15)
+no_NAs = setdiff(1:22, vars_to_impute)
+
+
+x = X[, c(8, no_NAs)]
+for (i in vars_to_impute){
+  Ximp = missForest(data.frame(x), sampsize = rep(125, ncol(x)), replace = TRUE)$ximp
+  x = cbind(X[, i], Ximp)
+}
+colnames(x)[1:length(vars_to_impute)] = names(X[, rev(vars_to_impute)])
+Ximp = missForest(data.frame(x), sampsize = rep(75, ncol(x)), replace = TRUE)$ximp
+
+# Final feature selection
+Ximp = cbind(Ximp, M)
+Ximp %<>%
+  select(-fuel_type.1, -walk_score, -WorkTimeInSeconds, -pct_tax_deductibl, -is_missing_pct_tax_deductibl,
+         -garage_listed)
+skim(Ximp)
+```
+
+```{r data for modeling, echo=T, results='hide'}
+n_train = 1:410
+n_test = 411:length(y)
+
+y_train = y[n_train]
+y_test = y[n_test]
+X_train = Ximp[n_train, ]
+X_test = Ximp[n_test, ]
+```
+
+```{r regression tree, echo=T, results='hide'}
+pacman::p_load(YARF)
+options(java.parameters = "-Xmx4000m")
+
+tree_mod = YARFCART(X_train, y_train)
+tree_mod
+get_tree_num_nodes_leaves_max_depths(tree_mod)
+illustrate_trees(tree_mod, max_depth = 4, open_file = TRUE, length_in_px_per_half_split = 40)
+```
+
+```{r linear model, echo=T, results='hide'}
+pacman::p_load(xtable)
+
+n_train = sample(1:513, 410)
+n_test = setdiff(1:513, n_train)
+y_train = y[n_train]
+y_test = y[n_test]
+X_train = Ximp[n_train, ]
+X_test = Ximp[n_test, ]
+
+linear_mod = lm(y_train ~ 0 + ., X_train)
+summary(linear_mod)$sigma
+summary(linear_mod)$r.squared
+xtable(linear_mod)
+
+yhat_oos = predict(linear_mod, X_test)
+oos_e = y_test - yhat_oos
+sd(linear_mod$residuals)
+sd(oos_e)
+```
+
+```{r random forest, echo=T, results='hide'}
+pacman::p_load(mlr)
+
+mlr_data = cbind(y, Ximp)
+colnames(mlr_data)[1] = "sale_price"
+
+task = makeRegrTask(data = mlr_data, target = "sale_price")
+mlr_mod = resample(makeLearner("regr.randomForest"), task, makeResampleDesc("CV", iters = 10), measures = list(rmse))
+sd(unlist(mlr_mod$measures.test))
+
+rf_mod = YARF(Ximp, y, num_trees = 320)
+rf_mod
+#illustrate_trees(rf_mod, max_depth = 3, open_file = TRUE, length_in_px_per_half_split = 30)
+
+n_train = sample(1:513, 410)
+n_test = setdiff(1:513, n_train)
+y_train = y[n_train]
+y_test = y[n_test]
+X_train = Ximp[n_train, ]
+X_test = Ximp[n_test, ]
+
+
+rf_is_mod = YARF(X_train, y_train, num_trees = 320)
+rf_is_mod
+yhat = predict(rf_is_mod, X_test)
+oos_rmse = sqrt(mean((y_test - yhat)^2))
+oos_rsq = 1 - sum((y_test - yhat)^2)/sum((y_test - mean(y))^2)
+oos_rmse
+oos_rsq
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
